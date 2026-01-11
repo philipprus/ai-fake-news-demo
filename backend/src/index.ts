@@ -2,6 +2,12 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import { validateEnv } from './config/env.js';
 import { logger } from './utils/logger.js';
+import { CacheService } from './services/cache-service.js';
+import { ArticleService } from './services/article-service.js';
+import { LLMService } from './services/llm-service.js';
+import { sourcesRoute } from './routes/sources.js';
+import { articlesRoute } from './routes/articles.js';
+import { streamRoute } from './routes/stream.js';
 
 /**
  * Main server entry point
@@ -15,6 +21,11 @@ async function start() {
     corsOrigin: env.CORS_ORIGIN,
     cacheTTL: env.RSS_CACHE_TTL_MINUTES,
   });
+
+  // Initialize services
+  const cacheService = new CacheService(env.RSS_CACHE_TTL_MINUTES);
+  const articleService = new ArticleService();
+  const llmService = new LLMService(env.OPENAI_API_KEY, 3); // 3 concurrent requests
 
   // Create Fastify instance
   const fastify = Fastify({
@@ -32,10 +43,21 @@ async function start() {
     return { status: 'ok', timestamp: new Date().toISOString() };
   });
 
-  // TODO: Register routes
-  // await fastify.register(sourcesRoute, { prefix: '/api' });
-  // await fastify.register(articlesRoute, { prefix: '/api' });
-  // await fastify.register(streamRoute, { prefix: '/api' });
+  // Register routes
+  await fastify.register(sourcesRoute, { prefix: '/api' });
+  
+  await fastify.register(articlesRoute, { 
+    prefix: '/api',
+    cacheService,
+    articleService,
+  });
+  
+  await fastify.register(streamRoute, { 
+    prefix: '/api',
+    cacheService,
+    articleService,
+    llmService,
+  });
 
   // Start server
   try {

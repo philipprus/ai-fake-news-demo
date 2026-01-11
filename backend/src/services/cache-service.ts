@@ -1,70 +1,69 @@
+import NodeCache from 'node-cache';
 import { logger } from '../utils/logger.js';
 
 /**
- * Cache entry with TTL
- */
-interface CacheEntry<T> {
-  data: T;
-  expiresAt: number;
-}
-
-/**
- * Simple in-memory cache service with TTL
+ * Cache service wrapper around node-cache
+ * Provides a thin abstraction layer with logging
  */
 export class CacheService {
-  private cache: Map<string, CacheEntry<any>> = new Map();
-  private ttlMinutes: number;
+  private cache: NodeCache;
 
   constructor(ttlMinutes: number = 10) {
-    this.ttlMinutes = ttlMinutes;
-    
-    // Cleanup expired entries every minute
-    setInterval(() => this.cleanup(), 60000);
+    this.cache = new NodeCache({
+      stdTTL: ttlMinutes * 60, // Convert minutes to seconds
+      checkperiod: 60, // Cleanup every 60 seconds
+      useClones: false, // Don't clone objects (faster)
+    });
+
+    // Log cache events
+    this.cache.on('expired', (key, _value) => {
+      logger.debug('Cache expired', { key });
+    });
+
+    logger.info('Cache service initialized', { ttlMinutes });
   }
 
   /**
    * Get value from cache
    */
   get<T>(key: string): T | null {
-    const entry = this.cache.get(key);
+    const value = this.cache.get<T>(key);
     
-    if (!entry) {
+    if (value === undefined) {
       logger.debug('Cache miss', { key });
       return null;
     }
 
-    // Check if expired
-    if (Date.now() > entry.expiresAt) {
-      logger.debug('Cache expired', { key });
-      this.cache.delete(key);
-      return null;
-    }
-
     logger.debug('Cache hit', { key });
-    return entry.data as T;
+    return value;
   }
 
   /**
    * Set value in cache with TTL
    */
   set<T>(key: string, data: T, ttlMinutes?: number): void {
-    const ttl = ttlMinutes || this.ttlMinutes;
-    const expiresAt = Date.now() + ttl * 60 * 1000;
-
-    this.cache.set(key, { data, expiresAt });
+    let success: boolean;
     
-    logger.debug('Cache set', { 
-      key, 
-      ttlMinutes: ttl,
-      expiresAt: new Date(expiresAt).toISOString() 
-    });
+    if (ttlMinutes !== undefined) {
+      success = this.cache.set(key, data, ttlMinutes * 60);
+    } else {
+      success = this.cache.set(key, data);
+    }
+    
+    if (success) {
+      const defaultTtl = this.cache.options.stdTTL;
+      logger.debug('Cache set', { 
+        key, 
+        ttlMinutes: ttlMinutes || (defaultTtl ? defaultTtl / 60 : 0),
+      });
+    }
   }
 
   /**
    * Delete value from cache
    */
   delete(key: string): void {
-    this.cache.delete(key);
+    this.cache.del(key);
     logger.debug('Cache deleted', { key });
   }
 
@@ -72,28 +71,9 @@ export class CacheService {
    * Clear all cache
    */
   clear(): void {
-    const size = this.cache.size;
-    this.cache.clear();
-    logger.info('Cache cleared', { entriesRemoved: size });
-  }
-
-  /**
-   * Cleanup expired entries
-   */
-  private cleanup(): void {
-    const now = Date.now();
-    let removed = 0;
-
-    for (const [key, entry] of this.cache.entries()) {
-      if (now > entry.expiresAt) {
-        this.cache.delete(key);
-        removed++;
-      }
-    }
-
-    if (removed > 0) {
-      logger.debug('Cache cleanup', { entriesRemoved: removed });
-    }
+    const keys = this.cache.keys();
+    this.cache.flushAll();
+    logger.info('Cache cleared', { entriesRemoved: keys.length });
   }
 
   /**
@@ -101,8 +81,9 @@ export class CacheService {
    */
   getStats(): { size: number; keys: string[] } {
     return {
-      size: this.cache.size,
-      keys: Array.from(this.cache.keys()),
+      size: this.cache.keys().length,
+      keys: this.cache.keys(),
     };
   }
 }
+
