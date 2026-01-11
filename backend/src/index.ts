@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import { validateEnv } from './config/env.js';
@@ -8,6 +9,7 @@ import { LLMService } from './services/llm-service.js';
 import { sourcesRoute } from './routes/sources.js';
 import { articlesRoute } from './routes/articles.js';
 import { streamRoute } from './routes/stream.js';
+import { regenerateRoute } from './routes/regenerate.js';
 
 /**
  * Main server entry point
@@ -32,10 +34,12 @@ async function start() {
     logger: false, // Using custom logger
   });
 
-  // Register CORS
+  // Register CORS with permissive settings for development
   await fastify.register(cors, {
-    origin: env.CORS_ORIGIN,
+    origin: true, // Allow all origins in development
     credentials: true,
+    exposedHeaders: ['Content-Type', 'Cache-Control', 'X-Accel-Buffering'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   });
 
   // Health check endpoint
@@ -57,6 +61,12 @@ async function start() {
     cacheService,
     articleService,
     llmService,
+  });
+  
+  await fastify.register(regenerateRoute, {
+    prefix: '/api',
+    llmService,
+    cacheService,
   });
 
   // Start server

@@ -9,6 +9,7 @@ import { logger } from '../utils/logger.js';
 
 interface StreamQuerystring {
   source?: string;
+  cachedIds?: string; // Comma-separated list of article IDs that are already cached
 }
 
 /**
@@ -51,6 +52,8 @@ export async function streamRoute(
       reply.raw.setHeader('Cache-Control', 'no-cache');
       reply.raw.setHeader('Connection', 'keep-alive');
       reply.raw.setHeader('X-Accel-Buffering', 'no'); // Disable nginx buffering
+      reply.raw.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
+      reply.raw.setHeader('Access-Control-Allow-Credentials', 'true');
 
       logger.info('SSE stream started', { source });
 
@@ -65,19 +68,49 @@ export async function streamRoute(
           options.cacheService.set(cacheKey, articles);
         }
 
-        // Send init event
+        // Check for cached fake news
+        const fakeNewsCacheKey = `fake-news-${source}`;
+        const cachedFakeNews = options.cacheService.get<Map<string, FullArticle>>(fakeNewsCacheKey);
+        const cachedFakeNewsMap = cachedFakeNews || new Map<string, FullArticle>();
+        
+        // Merge with cache: use cached fake news if available
+        const mergedArticles = articles.map(article => {
+          const cached = cachedFakeNewsMap.get(article.id);
+          if (cached && cached.fakeTitle && cached.category) {
+            logger.debug('Using cached fake news', { articleId: article.id, source });
+            return cached;
+          }
+          return article;
+        });
+        
+        const cachedCount = mergedArticles.filter(a => a.fakeTitle).length;
+        const needsGeneration = mergedArticles.length - cachedCount;
+        
+        if (cachedCount > 0) {
+          logger.info('Found cached fake news', {
+            source,
+            total: mergedArticles.length,
+            cached: cachedCount,
+            needsGeneration,
+          });
+        }
+
+        // Send init event with merged articles (some may already have fake titles)
         sendSSE(reply, EVENT_TYPES.INIT, {
           type: EVENT_TYPES.INIT,
-          total: articles.length,
-          articles: articles,
+          total: mergedArticles.length,
+          articles: mergedArticles,
         });
 
+        // Filter articles that need generation
+        const articlesToGenerate = mergedArticles.filter(article => !article.fakeTitle);
+
         // Process articles with LLM
-        let completed = 0;
-        const fullArticles: FullArticle[] = [];
+        let completed = cachedCount; // Start from cached count
+        const fullArticles: FullArticle[] = [...mergedArticles.filter(a => a.fakeTitle)]; // Include cached
 
         // Process articles sequentially (concurrency handled by LLMService)
-        const promises = articles.map(async (article) => {
+        const promises = articlesToGenerate.map(async (article) => {
           try {
             // Generate fake news
             const llmResult = await options.llmService.generateFakeNews(
@@ -92,6 +125,9 @@ export async function streamRoute(
             };
 
             fullArticles.push(fullArticle);
+            
+            // Cache the generated fake news
+            cachedFakeNewsMap.set(article.id, fullArticle);
 
             // Send article event
             sendSSE(reply, EVENT_TYPES.ARTICLE, {
@@ -105,7 +141,7 @@ export async function streamRoute(
             sendSSE(reply, EVENT_TYPES.PROGRESS, {
               type: EVENT_TYPES.PROGRESS,
               completed,
-              total: articles.length,
+              total: mergedArticles.length,
             });
           } catch (error) {
             logger.error('Failed to generate fake news for article', {
@@ -127,13 +163,20 @@ export async function streamRoute(
             sendSSE(reply, EVENT_TYPES.PROGRESS, {
               type: EVENT_TYPES.PROGRESS,
               completed,
-              total: articles.length,
+              total: mergedArticles.length,
             });
           }
         });
 
         // Wait for all to complete
         await Promise.all(promises);
+        
+        // Save updated cache
+        options.cacheService.set(fakeNewsCacheKey, cachedFakeNewsMap);
+        logger.debug('Saved fake news cache', { 
+          source, 
+          totalCached: cachedFakeNewsMap.size 
+        });
 
         // Send done event
         sendSSE(reply, EVENT_TYPES.DONE, {
@@ -142,9 +185,11 @@ export async function streamRoute(
 
         logger.info('SSE stream completed', {
           source,
-          total: articles.length,
+          total: mergedArticles.length,
           successful: fullArticles.length,
-          failed: articles.length - fullArticles.length,
+          failed: mergedArticles.length - fullArticles.length,
+          cached: cachedCount,
+          generated: needsGeneration,
         });
 
         // Close connection
