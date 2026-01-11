@@ -1,0 +1,8 @@
+{
+  "name": "shared",
+  "version": "1.0.0",
+  "description": "Shared types for fake news generator",
+  "type": "module",
+  "main": "types/index.ts",
+  "types": "types/index.ts"
+}
