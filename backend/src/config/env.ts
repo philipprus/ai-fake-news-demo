@@ -4,6 +4,7 @@ import { z } from 'zod';
  * Environment variables schema validation
  */
 const envSchema = z.object({
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   OPENAI_API_KEY: z.string().min(1, 'OPENAI_API_KEY is required'),
   PORT: z.string().default('3000').transform(Number),
   CORS_ORIGIN: z.string().default('http://localhost:5173'),

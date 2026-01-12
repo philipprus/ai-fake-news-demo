@@ -19,8 +19,9 @@ async function start() {
   const env = validateEnv();
   
   logger.info('Starting Fake News Generator API', {
+    nodeEnv: env.NODE_ENV,
     port: env.PORT,
-    corsOrigin: env.CORS_ORIGIN,
+    corsOrigin: env.NODE_ENV === 'production' ? env.CORS_ORIGIN : 'all origins (development)',
     cacheTTL: env.RSS_CACHE_TTL_MINUTES,
   });
 
@@ -34,9 +35,9 @@ async function start() {
     logger: false, // Using custom logger
   });
 
-  // Register CORS with permissive settings for development
+  // Register CORS
   await fastify.register(cors, {
-    origin: true, // Allow all origins in development
+    origin: env.NODE_ENV === 'production' ? env.CORS_ORIGIN : true,
     credentials: true,
     exposedHeaders: ['Content-Type', 'Cache-Control', 'X-Accel-Buffering'],
     allowedHeaders: ['Content-Type', 'Authorization'],
