@@ -3,6 +3,7 @@ import { NewsProvider } from './base.js';
 import { ArticleStub } from '../schemas/article.js';
 import { hashUrl } from '../utils/hash.js';
 import { logger } from '../utils/logger.js';
+import { RSS_FETCH_TIMEOUT_MS } from '../constants/defaults.js';
 
 /**
  * Standard RSS 2.0 structure
@@ -63,7 +64,7 @@ export abstract class BaseRSSProvider<
   protected abstract readonly rssUrl: string;
   
   private readonly parser = new XMLParser();
-  private readonly timeout = 10000; // 10 seconds
+  private readonly timeout = RSS_FETCH_TIMEOUT_MS;
 
   /**
    * Extract items from parsed RSS data

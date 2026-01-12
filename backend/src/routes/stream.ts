@@ -22,6 +22,7 @@ export async function streamRoute(
     cacheService: CacheService;
     articleService: ArticleService;
     llmService: LLMService;
+    corsOrigin: string;
   }
 ) {
   fastify.get<{ Querystring: StreamQuerystring }>(
@@ -52,7 +53,7 @@ export async function streamRoute(
       reply.raw.setHeader('Cache-Control', 'no-cache');
       reply.raw.setHeader('Connection', 'keep-alive');
       reply.raw.setHeader('X-Accel-Buffering', 'no'); // Disable nginx buffering
-      reply.raw.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
+      reply.raw.setHeader('Access-Control-Allow-Origin', options.corsOrigin);
       reply.raw.setHeader('Access-Control-Allow-Credentials', 'true');
 
       logger.info('SSE stream started', { source });

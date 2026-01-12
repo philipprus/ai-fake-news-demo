@@ -2,6 +2,7 @@ import OpenAI from 'openai';
 import { llmResponseSchema, LLMResponse } from '../schemas/llm-response.js';
 import { logger } from '../utils/logger.js';
 import pLimit from 'p-limit';
+import { LLM_CONCURRENCY_LIMIT, LLM_TIMEOUT_MS, LLM_MAX_RETRIES } from '../constants/defaults.js';
 
 /**
  * LLM Service for generating fake news headlines
@@ -9,10 +10,10 @@ import pLimit from 'p-limit';
 export class LLMService {
   private client: OpenAI;
   private limiter: ReturnType<typeof pLimit>;
-  private timeout: number = 30000; // 30 seconds
-  private maxRetries: number = 1;
+  private timeout: number = LLM_TIMEOUT_MS;
+  private maxRetries: number = LLM_MAX_RETRIES;
 
-  constructor(apiKey: string, concurrency: number = 3) {
+  constructor(apiKey: string, concurrency: number = LLM_CONCURRENCY_LIMIT) {
     this.client = new OpenAI({ apiKey });
     this.limiter = pLimit(concurrency);
     

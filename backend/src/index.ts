@@ -28,7 +28,7 @@ async function start() {
   // Initialize services
   const cacheService = new CacheService(env.RSS_CACHE_TTL_MINUTES);
   const articleService = new ArticleService();
-  const llmService = new LLMService(env.OPENAI_API_KEY, 3); // 3 concurrent requests
+  const llmService = new LLMService(env.OPENAI_API_KEY);
 
   // Create Fastify instance
   const fastify = Fastify({
@@ -62,6 +62,7 @@ async function start() {
     cacheService,
     articleService,
     llmService,
+    corsOrigin: env.CORS_ORIGIN,
   });
   
   await fastify.register(regenerateRoute, {

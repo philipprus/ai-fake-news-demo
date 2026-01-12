@@ -1,5 +1,6 @@
 import { ArticleStub } from '../schemas/article.js';
 import { logger } from '../utils/logger.js';
+import { DEFAULT_ARTICLE_COUNT } from '../constants/defaults.js';
 
 /**
  * Article service for processing and filtering articles
@@ -11,7 +12,7 @@ export class ArticleService {
    * - Sorts by date (newest first)
    * - Returns exactly N articles
    */
-  selectTopArticles(articles: ArticleStub[], count: number = 10): ArticleStub[] {
+  selectTopArticles(articles: ArticleStub[], count: number = DEFAULT_ARTICLE_COUNT): ArticleStub[] {
     logger.debug('Selecting top articles', { 
       inputCount: articles.length, 
       requestedCount: count 
