@@ -402,4 +402,27 @@ The application uses a two-tier caching approach:
 
 ---
 
+## 🗺️ Roadmap & Future Improvements
+
+### Backend
+- [ ] Add request validation with Zod schemas in routes
+- [ ] Add Docker setup for backend and frontend
+- [ ] Configure CI/CD pipeline
+- [ ] Add production build optimization
+
+### Frontend
+- [ ] Improve accessibility (ARIA labels, keyboard navigation)
+- [ ] Add mobile responsive design
+- [ ] Implement dark mode theme
+
+### Testing
+- [ ] Add integration tests for API endpoints
+- [ ] Add E2E tests for critical user flows
+
+### Documentation
+- [ ] Document architecture decisions (ADR format)
+- [ ] Add contributing guidelines
+
+---
+
 Enjoy generating fake news! 🎭
