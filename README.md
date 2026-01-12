@@ -301,8 +301,12 @@ yarn lint   # Type checking and linting
 ### Frontend
 ```bash
 cd frontend
+yarn test   # 1 focused test for SSE hook
 yarn build  # Type checking
 ```
+
+**Test Coverage:**
+- ✅ useStreaming hook - SSE connection management (critical custom logic)
 
 ---
 
