@@ -11,6 +11,17 @@ import { API_BASE_URL } from './constants/api';
 const { Header, Content } = Layout;
 const { Title, Paragraph } = Typography;
 
+
+interface RegenerateResponse {
+  success: boolean;
+  article?: {
+    fakeTitle: string;
+    category: string;
+  };
+  message?: string;
+}
+
+
 function App() {
   const [selectedSource, setSelectedSource] = useState<string>('');
   const { articles, progress, isStreaming, error, startStream, reset, updateArticle } = useFakeNews();
@@ -52,7 +63,7 @@ function App() {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json();
+      const data = await response.json() as RegenerateResponse;
       
       if (data.success && data.article) {
         // Update article in state
@@ -61,12 +72,13 @@ function App() {
           fakeTitle: data.article.fakeTitle,
           category: data.article.category,
         });
-        message.success('Fake headline regenerated!');
+        void message.success('Fake headline regenerated!');
       } else {
         throw new Error(data.message || 'Failed to regenerate');
       }
-    } catch (error) {
-      message.error('Failed to regenerate headline');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to regenerate headline';
+      void message.error(errorMessage);
     } finally {
       // Remove from regenerating set
       setRegeneratingIds(prev => {
@@ -121,7 +133,9 @@ function App() {
             <ArticleTable 
               articles={articles} 
               isStreaming={isStreaming} 
-              onRegenerate={handleRegenerate}
+              onRegenerate={(article) => {
+                void handleRegenerate(article);
+              }}
               regeneratingIds={regeneratingIds}
             />
           )}

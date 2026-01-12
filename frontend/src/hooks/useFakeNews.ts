@@ -38,13 +38,14 @@ function reducer(state: State, action: Action): State {
         isStreaming: true,
       };
 
-    case 'INIT':
+    case 'INIT': {
       const cachedCount = action.payload.articles.filter(a => a.fakeTitle).length;
       return {
         ...state,
         articles: action.payload.articles,
         progress: { completed: cachedCount, total: action.payload.total },
       };
+    }
 
     case 'ARTICLE': {
       const updatedArticles = state.articles.map((article) =>

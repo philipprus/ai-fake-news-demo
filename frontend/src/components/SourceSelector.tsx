@@ -20,10 +20,6 @@ function SourceSelector({ onSelect, disabled, selectedSource }: SourceSelectorPr
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchSources();
-  }, []);
-
   const fetchSources = async () => {
     setLoading(true);
     setError(null);
@@ -34,14 +30,18 @@ function SourceSelector({ onSelect, disabled, selectedSource }: SourceSelectorPr
         throw new Error('Failed to fetch sources');
       }
 
-      const data: SourcesResponse = await response.json();
+      const data: SourcesResponse = await response.json() as SourcesResponse;
       setSources(data.sources);
-    } catch (err) {
+    } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to load sources');
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    void fetchSources();
+  }, []);
 
   const options = sources.map((source) => ({
     label: source.toUpperCase(),

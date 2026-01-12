@@ -91,8 +91,8 @@ export function useStreaming(url: string | null, options: UseStreamingOptions = 
       };
 
       // Listen to all event types
-      Object.values(EVENT_TYPES).forEach((eventType) => {
-        eventSource.addEventListener(eventType, (e: MessageEvent) => {
+      Object.values(EVENT_TYPES).forEach((eventType: string) => {
+        eventSource.addEventListener(eventType, (e: MessageEvent<string>) => {
           try {
             const data = JSON.parse(e.data) as StreamEvent;
             onEvent?.(data);
@@ -131,7 +131,7 @@ export function useStreaming(url: string | null, options: UseStreamingOptions = 
       globalConnectionLock = false;
       globalEventSource = null;
     };
-  }, [url]); // ONLY url in dependencies!
+  }, [url, onEvent, onError, onComplete]);
 
   return {
     isConnected,

@@ -39,7 +39,12 @@ describe('useStreaming', () => {
 
     // Simulate event
     const mockData = { type: EVENT_TYPES.INIT, total: 10, articles: [] };
-    const eventSource = (global.EventSource as any).mock?.results?.[0]?.value;
+    
+    interface MockEventSource {
+      simulateEvent?: (type: string, data: unknown) => void;
+    }
+    
+    const eventSource = (global.EventSource as { mock?: { results?: Array<{ value: MockEventSource }> } }).mock?.results?.[0]?.value;
     
     if (eventSource?.simulateEvent) {
       eventSource.simulateEvent(EVENT_TYPES.INIT, mockData);
