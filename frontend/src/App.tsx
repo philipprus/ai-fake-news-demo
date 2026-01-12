@@ -12,18 +12,13 @@ const { Header, Content } = Layout;
 const { Title, Paragraph } = Typography;
 
 function App() {
-  console.log('🔄 App: Rendering');
-
   const [selectedSource, setSelectedSource] = useState<string>('');
   const { articles, progress, isStreaming, error, startStream, reset, updateArticle } = useFakeNews();
   const [regeneratingIds, setRegeneratingIds] = useState<Set<string>>(new Set());
 
   const handleSourceSelect = (source: string) => {
-    console.log('🎯 App: Source selected', { source, selectedSource });
-    
     // Only reset if changing source
     if (selectedSource && selectedSource !== source) {
-      console.log('🔄 App: Resetting previous source');
       reset();
     }
     
@@ -37,8 +32,6 @@ function App() {
   };
 
   const handleRegenerate = async (article: FullArticle) => {
-    console.log('🔄 Regenerating article:', article.id);
-    
     // Add to regenerating set
     setRegeneratingIds(prev => new Set(prev).add(article.id));
     
@@ -73,7 +66,6 @@ function App() {
         throw new Error(data.message || 'Failed to regenerate');
       }
     } catch (error) {
-      console.error('Failed to regenerate:', error);
       message.error('Failed to regenerate headline');
     } finally {
       // Remove from regenerating set

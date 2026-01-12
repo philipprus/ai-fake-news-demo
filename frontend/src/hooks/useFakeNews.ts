@@ -31,22 +31,15 @@ const initialState: State = {
 };
 
 function reducer(state: State, action: Action): State {
-  console.log('🔧 Reducer: Action dispatched', action.type, action);
-  
   switch (action.type) {
     case 'START_STREAM':
-      console.log('🚀 Reducer: Starting stream');
       return {
         ...initialState,
         isStreaming: true,
       };
 
     case 'INIT':
-      console.log('📋 Reducer: Initializing with', action.payload.total, 'articles');
       const cachedCount = action.payload.articles.filter(a => a.fakeTitle).length;
-      if (cachedCount > 0) {
-        console.log('💾 Backend sent', cachedCount, 'cached articles');
-      }
       return {
         ...state,
         articles: action.payload.articles,
@@ -54,7 +47,6 @@ function reducer(state: State, action: Action): State {
       };
 
     case 'ARTICLE': {
-      console.log('📝 Reducer: Updating article', action.payload.id);
       const updatedArticles = state.articles.map((article) =>
         article.id === action.payload.id ? action.payload : article
       );
@@ -65,7 +57,6 @@ function reducer(state: State, action: Action): State {
     }
 
     case 'UPDATE_ARTICLE': {
-      console.log('🔄 Reducer: Manually updating article', action.payload.id);
       const updatedArticles = state.articles.map((article) =>
         article.id === action.payload.id ? { ...article, ...action.payload } : article
       );
@@ -76,14 +67,12 @@ function reducer(state: State, action: Action): State {
     }
 
     case 'PROGRESS':
-      console.log('📊 Reducer: Progress update', action.payload);
       return {
         ...state,
         progress: action.payload,
       };
 
     case 'ERROR':
-      console.error('❌ Reducer: Error', action.payload);
       return {
         ...state,
         error: action.payload,
@@ -91,14 +80,12 @@ function reducer(state: State, action: Action): State {
       };
 
     case 'DONE':
-      console.log('✅ Reducer: Stream done');
       return {
         ...state,
         isStreaming: false,
       };
 
     case 'RESET':
-      console.log('🔄 Reducer: Reset to initial state');
       return initialState;
 
     default:
@@ -110,24 +97,12 @@ function reducer(state: State, action: Action): State {
  * Main hook for managing fake news generation
  */
 export function useFakeNews() {
-  console.log('🔄 useFakeNews: Hook called');
-  
   const [state, dispatch] = useReducer(reducer, initialState);
   const [streamUrl, setStreamUrl] = useState<string | null>(null);
 
-  console.log('📊 useFakeNews: Current state', { 
-    articlesCount: state.articles.length,
-    isStreaming: state.isStreaming,
-    streamUrl,
-    progress: state.progress,
-  });
-
   const handleEvent = useCallback((event: StreamEvent) => {
-    console.log('📨 useFakeNews: Event received', event.type, event);
-    
     switch (event.type) {
       case EVENT_TYPES.INIT:
-        console.log('🎬 useFakeNews: INIT event - articles:', event.total);
         dispatch({
           type: 'INIT',
           payload: {
@@ -138,7 +113,6 @@ export function useFakeNews() {
         break;
 
       case EVENT_TYPES.ARTICLE:
-        console.log('📰 useFakeNews: ARTICLE event - id:', event.article.id);
         dispatch({
           type: 'ARTICLE',
           payload: event.article,
@@ -146,7 +120,6 @@ export function useFakeNews() {
         break;
 
       case EVENT_TYPES.PROGRESS:
-        console.log('📈 useFakeNews: PROGRESS event', `${event.completed}/${event.total}`);
         dispatch({
           type: 'PROGRESS',
           payload: {
@@ -157,19 +130,16 @@ export function useFakeNews() {
         break;
 
       case EVENT_TYPES.ERROR:
-        console.error('❌ useFakeNews: ERROR event', event.message);
         // Don't stop streaming on per-article errors
         break;
 
       case EVENT_TYPES.DONE:
-        console.log('✅ useFakeNews: DONE event');
         dispatch({ type: 'DONE' });
         break;
     }
   }, []);
 
   const handleError = useCallback((error: Error) => {
-    console.error('💥 useFakeNews: Stream error', error.message);
     dispatch({
       type: 'ERROR',
       payload: error.message,
@@ -177,7 +147,6 @@ export function useFakeNews() {
   }, []);
 
   const handleComplete = useCallback(() => {
-    console.log('🎉 useFakeNews: Stream complete');
     dispatch({ type: 'DONE' });
   }, []);
 
@@ -188,21 +157,17 @@ export function useFakeNews() {
   });
 
   const startStream = useCallback((source: string) => {
-    console.log('▶️ useFakeNews: Starting stream', { source });
-    const url = `${API_ENDPOINTS.STREAM}?source=${source}`;
-    console.log('🌐 Starting SSE connection to:', url);
     dispatch({ type: 'START_STREAM' });
+    const url = `${API_ENDPOINTS.FAKE_NEWS_STREAM}?source=${source}`;
     setStreamUrl(url);
   }, []);
 
   const reset = useCallback(() => {
-    console.log('🔄 useFakeNews: Resetting');
     setStreamUrl(null);
     dispatch({ type: 'RESET' });
   }, []);
 
   const updateArticle = useCallback((article: FullArticle) => {
-    console.log('🔄 useFakeNews: Updating article', article.id);
     dispatch({ type: 'UPDATE_ARTICLE', payload: article });
   }, []);
 

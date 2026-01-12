@@ -27,7 +27,6 @@ export function useStreaming(url: string | null, options: UseStreamingOptions = 
     if (!url) {
       // Close connection if exists
       if (eventSourceRef.current) {
-        console.log('❌ No URL, closing connection');
         eventSourceRef.current.close();
         eventSourceRef.current = null;
         currentUrlRef.current = null;
@@ -40,31 +39,26 @@ export function useStreaming(url: string | null, options: UseStreamingOptions = 
 
     // Don't reconnect if URL hasn't changed
     if (currentUrlRef.current === url && eventSourceRef.current) {
-      console.log('⏸️ URL unchanged, skipping reconnect');
       return;
     }
 
     // GLOBAL LOCK: Prevent multiple connections
     if (globalConnectionLock && globalEventSource) {
-      console.warn('🔒 BLOCKED: Another SSE connection is already active!');
       return;
     }
 
     // Close existing connection
     if (eventSourceRef.current) {
-      console.log('🔄 Closing previous SSE connection');
       eventSourceRef.current.close();
       eventSourceRef.current = null;
     }
 
     // Close global connection if exists
     if (globalEventSource) {
-      console.log('🌐 Closing global SSE connection');
       globalEventSource.close();
       globalEventSource = null;
     }
 
-    console.log('🚀 Opening NEW SSE connection to:', url);
     currentUrlRef.current = url;
     globalConnectionLock = true;
     
@@ -78,11 +72,9 @@ export function useStreaming(url: string | null, options: UseStreamingOptions = 
 
       eventSource.onopen = () => {
         setIsConnected(true);
-        console.log('✅ SSE connected');
       };
 
-      eventSource.onerror = (err) => {
-        console.error('❌ SSE error:', err);
+      eventSource.onerror = () => {
         const error = new Error('Stream connection failed');
         setError(error);
         setIsConnected(false);
@@ -107,7 +99,6 @@ export function useStreaming(url: string | null, options: UseStreamingOptions = 
 
             // Auto-close on done event
             if (data.type === EVENT_TYPES.DONE) {
-              console.log('✅ Stream DONE, closing connection');
               onComplete?.();
               if (eventSourceRef.current) {
                 eventSourceRef.current.close();
@@ -118,8 +109,8 @@ export function useStreaming(url: string | null, options: UseStreamingOptions = 
               globalEventSource = null;
               setIsConnected(false);
             }
-          } catch (error) {
-            console.error('Failed to parse SSE event:', error);
+          } catch {
+            // Silently ignore parse errors
           }
         });
       });
@@ -131,7 +122,6 @@ export function useStreaming(url: string | null, options: UseStreamingOptions = 
 
     // Cleanup on unmount
     return () => {
-      console.log('🧹 Cleaning up SSE connection');
       if (eventSourceRef.current) {
         eventSourceRef.current.close();
         eventSourceRef.current = null;

@@ -38,7 +38,6 @@ function SourceSelector({ onSelect, disabled, selectedSource }: SourceSelectorPr
       setSources(data.sources);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load sources');
-      console.error('Failed to fetch sources:', err);
     } finally {
       setLoading(false);
     }
