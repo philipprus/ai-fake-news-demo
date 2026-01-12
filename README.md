@@ -291,8 +291,12 @@ That's it! The source will automatically appear in the frontend dropdown.
 ### Backend
 ```bash
 cd backend
-yarn lint
+yarn test   # 1 focused test for core business logic
+yarn lint   # Type checking and linting
 ```
+
+**Test Coverage:**
+- ✅ Article Service - sorting, deduplication, selection (core business logic)
 
 ### Frontend
 ```bash
