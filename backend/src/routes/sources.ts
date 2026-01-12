@@ -2,6 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { providerRegistry } from '../providers/registry.js';
 import { logger } from '../utils/logger.js';
 import { lenientRateLimit } from '../config/rate-limit.js';
+import { sourcesResponseSchema } from '../schemas/json-schemas.js';
 
 /**
  * GET /api/sources
@@ -9,6 +10,13 @@ import { lenientRateLimit } from '../config/rate-limit.js';
  */
 export async function sourcesRoute(fastify: FastifyInstance) {
   fastify.get('/sources', {
+    schema: {
+      description: 'Get list of available news sources',
+      tags: ['sources'],
+      response: {
+        200: sourcesResponseSchema,
+      },
+    },
     config: {
       rateLimit: lenientRateLimit,
     },

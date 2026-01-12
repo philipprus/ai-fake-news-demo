@@ -4,6 +4,7 @@ import { ArticleService } from '../services/article-service.js';
 import { CacheService } from '../services/cache-service.js';
 import { logger } from '../utils/logger.js';
 import { moderateRateLimit } from '../config/rate-limit.js';
+import { articlesQuerySchema, articlesResponseSchema } from '../schemas/json-schemas.js';
 
 interface ArticlesQuerystring {
   source?: string;
@@ -21,6 +22,16 @@ export async function articlesRoute(
   fastify.get<{ Querystring: ArticlesQuerystring }>(
     '/articles',
     {
+      schema: {
+        description: 'Get top articles from a news source (cached)',
+        tags: ['articles'],
+        querystring: articlesQuerySchema,
+        response: {
+          200: articlesResponseSchema,
+          400: { $ref: 'ErrorResponse#' },
+          404: { $ref: 'ErrorResponse#' },
+        },
+      },
       config: {
         rateLimit: moderateRateLimit,
       },

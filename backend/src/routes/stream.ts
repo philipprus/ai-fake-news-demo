@@ -7,6 +7,7 @@ import { FullArticle } from '../schemas/article.js';
 import { EVENT_TYPES } from '../schemas/events.js';
 import { logger } from '../utils/logger.js';
 import { strictRateLimit } from '../config/rate-limit.js';
+import { sourceQuerySchema } from '../schemas/json-schemas.js';
 
 interface StreamQuerystring {
   source?: string;
@@ -29,6 +30,15 @@ export async function streamRoute(
   fastify.get<{ Querystring: StreamQuerystring }>(
     '/fake-news/stream',
     {
+      schema: {
+        description: 'Server-Sent Events endpoint for streaming fake news generation',
+        tags: ['streaming'],
+        querystring: sourceQuerySchema,
+        response: {
+          400: { $ref: 'ErrorResponse#' },
+          404: { $ref: 'ErrorResponse#' },
+        },
+      },
       config: {
         rateLimit: strictRateLimit,
       },

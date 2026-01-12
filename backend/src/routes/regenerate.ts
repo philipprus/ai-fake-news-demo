@@ -4,6 +4,7 @@ import { CacheService } from '../services/cache-service.js';
 import { FullArticle } from '../schemas/article.js';
 import { logger } from '../utils/logger.js';
 import { moderateRateLimit } from '../config/rate-limit.js';
+import { regenerateBodySchema, regenerateResponseSchema } from '../schemas/json-schemas.js';
 
 interface RegenerateBody {
   articleId?: string;
@@ -22,6 +23,16 @@ export async function regenerateRoute(
   fastify.post<{ Body: RegenerateBody }>(
     '/regenerate',
     {
+      schema: {
+        description: 'Regenerate fake headline for a specific article',
+        tags: ['regenerate'],
+        body: regenerateBodySchema,
+        response: {
+          200: regenerateResponseSchema,
+          400: { $ref: 'ErrorResponse#' },
+          500: { $ref: 'ErrorResponse#' },
+        },
+      },
       config: {
         rateLimit: moderateRateLimit,
       },

@@ -2,8 +2,12 @@ import 'dotenv/config';
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import rateLimit from '@fastify/rate-limit';
+import swagger from '@fastify/swagger';
+import swaggerUi from '@fastify/swagger-ui';
 import { validateEnv } from './config/env.js';
 import { rateLimitConfig } from './config/rate-limit.js';
+import { swaggerConfig, swaggerUiConfig } from './config/swagger.js';
+import { schemasToRegister } from './schemas/json-schemas.js';
 import { logger } from './utils/logger.js';
 import { CacheService } from './services/cache-service.js';
 import { ArticleService } from './services/article-service.js';
@@ -53,8 +57,35 @@ async function start() {
     timeWindow: rateLimitConfig.timeWindow,
   });
 
+  // Register JSON schemas for validation
+  for (const schema of schemasToRegister) {
+    fastify.addSchema(schema);
+  }
+  
+  logger.info('JSON schemas registered', { count: schemasToRegister.length });
+
+  // Register Swagger documentation
+  await fastify.register(swagger, swaggerConfig);
+  await fastify.register(swaggerUi, swaggerUiConfig);
+  
+  logger.info('API documentation available at /docs');
+
   // Health check endpoint
-  fastify.get('/health', () => {
+  fastify.get('/health', {
+    schema: {
+      description: 'Health check endpoint for monitoring',
+      tags: ['health'],
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            status: { type: 'string' },
+            timestamp: { type: 'string', format: 'date-time' },
+          },
+        },
+      },
+    },
+  }, () => {
     return { status: 'ok', timestamp: new Date().toISOString() };
   });
 
