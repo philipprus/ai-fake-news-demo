@@ -11,6 +11,7 @@ A streaming AI demo that generates obviously fake, absurd, and humorous news hea
 - ✅ **Clean Architecture** - SOLID principles, plugin-based providers, type-safe TypeScript
 - ✅ **Beautiful UI** - Modern React interface with Ant Design
 - ✅ **Progressive UX** - Live progress tracking, graceful error handling
+- ✅ **API Documentation** - Interactive Swagger/OpenAPI docs at `/docs`
 
 ---
 
@@ -21,6 +22,7 @@ A streaming AI demo that generates obviously fake, absurd, and humorous news hea
 - **OpenAI API** - GPT-3.5 for headline generation
 - **TypeScript** - Type safety
 - **Zod** - Schema validation
+- **Swagger/OpenAPI** - Interactive API documentation
 - **node-cache** - In-memory caching
 - **fast-xml-parser** - RSS parsing
 - **p-limit** - Concurrency control
@@ -145,7 +147,8 @@ echo "VITE_API_BASE_URL=http://localhost:3000" > .env
 cd backend
 yarn dev
 ```
-Server will start on `http://localhost:3000`
+Server will start on `http://localhost:3000`  
+API docs available at `http://localhost:3000/docs`
 
 **Terminal 2 - Frontend:**
 ```bash
@@ -159,6 +162,24 @@ App will open on `http://localhost:5173`
 # From root directory
 yarn dev
 ```
+
+---
+
+## API Documentation
+
+### Swagger/OpenAPI
+
+Interactive API documentation is available via Swagger UI:
+
+**URL:** `http://localhost:3000/docs`
+
+Features:
+- 📖 **Interactive documentation** - Try all endpoints directly in the browser
+- 🔍 **Schema explorer** - View request/response models
+- 🎯 **Request validation** - See required parameters and types
+- 📝 **OpenAPI 3.0 spec** - Standard API description format
+
+The Swagger UI provides a complete reference for all available endpoints with examples and allows you to test the API without writing any code.
 
 ---
 
