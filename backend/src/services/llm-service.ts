@@ -124,7 +124,7 @@ The fakeTitle must be maximum 140 characters.`,
       }
 
       // Parse and validate JSON response
-      const parsed = JSON.parse(content);
+      const parsed: unknown = JSON.parse(content);
       const validated = llmResponseSchema.parse(parsed);
 
       return validated;

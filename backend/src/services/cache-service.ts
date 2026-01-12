@@ -16,7 +16,7 @@ export class CacheService {
     });
 
     // Log cache events
-    this.cache.on('expired', (key, _value) => {
+    this.cache.on('expired', (key: string) => {
       logger.debug('Cache expired', { key });
     });
 
@@ -27,7 +27,7 @@ export class CacheService {
    * Get value from cache
    */
   get<T>(key: string): T | null {
-    const value = this.cache.get<T>(key);
+    const value: unknown = this.cache.get(key);
     
     if (value === undefined) {
       logger.debug('Cache miss', { key });
@@ -35,7 +35,7 @@ export class CacheService {
     }
 
     logger.debug('Cache hit', { key });
-    return value;
+    return value as T;
   }
 
   /**

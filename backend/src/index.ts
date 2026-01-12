@@ -44,7 +44,7 @@ async function start() {
   });
 
   // Health check endpoint
-  fastify.get('/health', async () => {
+  fastify.get('/health', () => {
     return { status: 'ok', timestamp: new Date().toISOString() };
   });
 
@@ -81,4 +81,4 @@ async function start() {
   }
 }
 
-start();
+void start();

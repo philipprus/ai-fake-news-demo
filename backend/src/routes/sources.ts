@@ -1,4 +1,4 @@
-import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
+import { FastifyInstance } from 'fastify';
 import { providerRegistry } from '../providers/registry.js';
 import { logger } from '../utils/logger.js';
 
@@ -6,8 +6,8 @@ import { logger } from '../utils/logger.js';
  * GET /api/sources
  * Returns list of available news sources
  */
-export async function sourcesRoute(fastify: FastifyInstance) {
-  fastify.get('/sources', async (_request: FastifyRequest, _reply: FastifyReply) => {
+export function sourcesRoute(fastify: FastifyInstance) {
+  fastify.get('/sources', () => {
     try {
       const sources = providerRegistry.getAllProviderIds();
       

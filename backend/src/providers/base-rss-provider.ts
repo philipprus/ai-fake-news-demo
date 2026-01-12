@@ -137,7 +137,7 @@ export abstract class BaseRSSProvider<
       }
 
       const xmlText = await response.text();
-      const parsed = this.parser.parse(xmlText);
+      const parsed: TFeed = this.parser.parse(xmlText) as TFeed;
 
       const items = this.extractItems(parsed);
       const articles: ArticleStub[] = [];
