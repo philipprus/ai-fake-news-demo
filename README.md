@@ -2,6 +2,12 @@
 
 A streaming AI demo that generates obviously fake, absurd, and humorous news headlines based on real news.
 
+## 🎥 Video Demo
+
+**Watch the application in action:** [https://www.loom.com/share/2436c768e3b141678633e515b7310f89](https://www.loom.com/share/2436c768e3b141678633e515b7310f89) [Hebrew]
+
+---
+
 ## Features
 
 - ✅ **Real-time Streaming** - Watch fake headlines generate live via Server-Sent Events (SSE)
