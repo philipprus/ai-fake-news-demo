@@ -158,7 +158,7 @@ export function useFakeNews() {
 
   const startStream = useCallback((source: string) => {
     dispatch({ type: 'START_STREAM' });
-    const url = `${API_ENDPOINTS.FAKE_NEWS_STREAM}?source=${source}`;
+    const url = `${API_ENDPOINTS.STREAM}?source=${source}`;
     setStreamUrl(url);
   }, []);
 
