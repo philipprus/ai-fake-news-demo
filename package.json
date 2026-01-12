@@ -9,13 +9,15 @@
     "shared"
   ],
   "scripts": {
+    "dev": "concurrently \"yarn workspace backend dev\" \"yarn workspace frontend dev\"",
     "dev:backend": "yarn workspace backend dev",
     "dev:frontend": "yarn workspace frontend dev",
-    "dev": "concurrently \"yarn dev:backend\" \"yarn dev:frontend\"",
-    "build:backend": "yarn workspace backend build",
-    "build:frontend": "yarn workspace frontend build",
-    "build": "yarn build:backend && yarn build:frontend",
-    "start:backend": "yarn workspace backend start"
+    "build": "yarn workspace backend build && yarn workspace frontend build",
+    "start": "yarn workspace backend start",
+    "test": "yarn workspace backend test && yarn workspace frontend test",
+    "typecheck": "yarn workspace backend build && tsc --project frontend/tsconfig.json --noEmit",
+    "lint": "yarn workspace backend lint && yarn workspace frontend lint",
+    "validate": "yarn typecheck && yarn lint && yarn test"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
