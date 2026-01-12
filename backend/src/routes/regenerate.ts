@@ -3,6 +3,7 @@ import { LLMService } from '../services/llm-service.js';
 import { CacheService } from '../services/cache-service.js';
 import { FullArticle } from '../schemas/article.js';
 import { logger } from '../utils/logger.js';
+import { moderateRateLimit } from '../config/rate-limit.js';
 
 interface RegenerateBody {
   articleId?: string;
@@ -20,6 +21,11 @@ export async function regenerateRoute(
 ) {
   fastify.post<{ Body: RegenerateBody }>(
     '/regenerate',
+    {
+      config: {
+        rateLimit: moderateRateLimit,
+      },
+    },
     async (request: FastifyRequest<{ Body: RegenerateBody }>, reply: FastifyReply) => {
       const { articleId, source, realTitle } = request.body;
 

@@ -1,7 +1,9 @@
 import 'dotenv/config';
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
+import rateLimit from '@fastify/rate-limit';
 import { validateEnv } from './config/env.js';
+import { rateLimitConfig } from './config/rate-limit.js';
 import { logger } from './utils/logger.js';
 import { CacheService } from './services/cache-service.js';
 import { ArticleService } from './services/article-service.js';
@@ -41,6 +43,14 @@ async function start() {
     credentials: true,
     exposedHeaders: ['Content-Type', 'Cache-Control', 'X-Accel-Buffering'],
     allowedHeaders: ['Content-Type', 'Authorization'],
+  });
+
+  // Register rate limiting
+  await fastify.register(rateLimit, rateLimitConfig);
+  
+  logger.info('Rate limiting enabled', {
+    defaultMax: rateLimitConfig.max,
+    timeWindow: rateLimitConfig.timeWindow,
   });
 
   // Health check endpoint

@@ -6,6 +6,7 @@ import { LLMService } from '../services/llm-service.js';
 import { FullArticle } from '../schemas/article.js';
 import { EVENT_TYPES } from '../schemas/events.js';
 import { logger } from '../utils/logger.js';
+import { strictRateLimit } from '../config/rate-limit.js';
 
 interface StreamQuerystring {
   source?: string;
@@ -27,6 +28,11 @@ export async function streamRoute(
 ) {
   fastify.get<{ Querystring: StreamQuerystring }>(
     '/fake-news/stream',
+    {
+      config: {
+        rateLimit: strictRateLimit,
+      },
+    },
     async (request: FastifyRequest<{ Querystring: StreamQuerystring }>, reply: FastifyReply) => {
       const { source } = request.query;
 

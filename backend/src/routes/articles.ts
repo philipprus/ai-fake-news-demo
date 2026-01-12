@@ -3,6 +3,7 @@ import { providerRegistry } from '../providers/registry.js';
 import { ArticleService } from '../services/article-service.js';
 import { CacheService } from '../services/cache-service.js';
 import { logger } from '../utils/logger.js';
+import { moderateRateLimit } from '../config/rate-limit.js';
 
 interface ArticlesQuerystring {
   source?: string;
@@ -19,6 +20,11 @@ export async function articlesRoute(
 ) {
   fastify.get<{ Querystring: ArticlesQuerystring }>(
     '/articles',
+    {
+      config: {
+        rateLimit: moderateRateLimit,
+      },
+    },
     async (request: FastifyRequest<{ Querystring: ArticlesQuerystring }>, reply: FastifyReply) => {
       const { source, limit = '10' } = request.query;
 
